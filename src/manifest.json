@@ -1,0 +1,36 @@
+{
+  "action": {
+    "default_icon": "/img/logo.png"
+
+  },
+  "content_scripts": [
+    {
+      "all_frames": false,
+      "js": ["/js/content.js"],
+      "matches": ["https://*/*"],
+      "run_at": "document_start"
+    }
+  ],
+
+  "background": {
+    "service_worker": "/js/background.js"
+  },
+
+  "description": "None",
+  "icons": {
+    "128": "/img/logo.png",
+    "512": "/img/logo.png"
+  },
+  "manifest_version": 3,
+  "name": "Chrome Extension",
+  "permissions": ["alarms", "storage", "unlimitedStorage"],
+  "host_permissions": [],
+  "version": "0.0.4",
+  "web_accessible_resources": [
+    {
+      "resources": ["*"],
+      "matches": ["https://*/*"],
+      "extension_ids": []
+    }
+  ]
+}
