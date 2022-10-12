@@ -34,6 +34,7 @@ class Detector {
         const src = audioCtx.createMediaElementSource(this.$video)
         const analyser = audioCtx.createAnalyser()
 
+        analyser.connect(audioCtx.destination)
         src.connect(analyser)
 
         const bufferLength = analyser.frequencyBinCount
@@ -48,7 +49,8 @@ class Detector {
             
             const currentVolumeValue = this.middleValueArray(data_array)
 
-            if (Math.abs(currentVolumeValue - prevVolumeValue) > 50){
+            console.log(currentVolumeValue)
+            if (Math.abs(currentVolumeValue - prevVolumeValue) > 30 * this.$video.volume){
                 this.$message.textContent = 'Change audio frames'
                 this.visibleMessage()
 
@@ -56,7 +58,7 @@ class Detector {
             }
         }
 
-        src.connect(analyser)
+        // src.connect(analyser)
         analyser.fftSize = 256
 
         let buffer_length = analyser.frequencyBinCount
@@ -67,7 +69,6 @@ class Detector {
         this.$video.addEventListener('loadedmetadata', this.initSCD.bind(this))
 
         this.$video.addEventListener('scenechange', event => {
-            console.log(event)
             this.$message.textContent = 'Change video frames'
             this.visibleMessage()
         })
