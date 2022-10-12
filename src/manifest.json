@@ -13,7 +13,7 @@
       "css": [
         "/css/content.css"
       ],
-      "matches": ["https://*/*"],
+      "matches": ["https://www.youtube.com/*"],
       "run_at": "document_start"
     }
   ],

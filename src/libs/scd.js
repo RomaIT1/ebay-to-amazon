@@ -306,10 +306,19 @@ function playbackModeEvent() {
 */
 function detectSceneChange() {
     ctxA.drawImage(videoEl, 0, 0, width, height, 0, 0, opts.step_width, opts.step_height);
+    
     var diff = computeDifferences(ctxA, ctxB);
 
+    const catFound = new CustomEvent('animalfound', {
+        detail: {
+            diff: diff
+        }
+    })
+
+    videoEl.dispatchEvent(catFound)
+
     if (diff > opts.threshold) {
-    // Trigger a `scenechange` event.
+    
     var _sceneChangeEvent = document.createEvent('Event');
     _sceneChangeEvent.initEvent('scenechange', true, true);
     videoEl.dispatchEvent(_sceneChangeEvent);

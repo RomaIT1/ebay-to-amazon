@@ -1,7 +1,23 @@
+function middleValueArray(list){
+    let sumNumbers = 0
+
+    list.forEach(num => {
+        sumNumbers += num
+    })
+
+    const middleValue = sumNumbers / list.length
+
+    return Math.round(middleValue)
+}
+
+
 class Detector {
     $video = null
     $message = null
     timeOutMessage = null
+
+    volumePoint = []
+    pixelPoint = []
 
     constructor(config){
         
@@ -11,25 +27,21 @@ class Detector {
         document.addEventListener('DOMContentLoaded', this.contentLoaded.bind(this))
     }
 
-    middleValueArray(list){
-        let sumNumbers = 0
-
-        list.forEach(num => {
-            sumNumbers += num
-        })
-
-        const middleValue = sumNumbers / list.length
-
-        return Math.round(middleValue)
-    }
-
     contentLoaded(){
+        //* Create window message
         this.$message = this.createMessage()
 
+        //* Get YouTube video html element
         this.$video = document.querySelector('video')
 
+        //* Get detector canvas
+        this.$volumeCanvas = document.querySelector('.volume-detector__canvas')
+        this.$framesCanvas = document.querySelector('.frames-detector__canvas')
+
+        //* Prev volume value (default - 0)
         let prevVolumeValue = 0
 
+        //* Audio API
         const audioCtx = new AudioContext()
         const src = audioCtx.createMediaElementSource(this.$video)
         const analyser = audioCtx.createAnalyser()
@@ -41,36 +53,39 @@ class Detector {
         const dataArray = new Uint8Array(bufferLength)
         analyser.getByteFrequencyData(dataArray)
 
-        // Change volume video
+        analyser.fftSize = 256
+
+        let buffer_length = analyser.frequencyBinCount
+        var data_array = new Uint8Array(buffer_length)
+
+        //* Change volume video
         let renderFrame = () => {
             requestAnimationFrame(renderFrame)
 
             analyser.getByteFrequencyData(data_array)
             
-            const currentVolumeValue = this.middleValueArray(data_array)
+            const currentVolumeValue = middleValueArray(data_array)
+            
+            this.volumePoint.push(currentVolumeValue)
 
-            console.log(currentVolumeValue)
-            if (Math.abs(currentVolumeValue - prevVolumeValue) > 30 * this.$video.volume){
-                this.$message.textContent = 'Change audio frames'
+            if (Math.abs(currentVolumeValue - prevVolumeValue) > 50 * ( Math.round(this.$video.volume * 10) / 10 )){
                 this.visibleMessage()
 
                 prevVolumeValue = currentVolumeValue
             }
         }
 
-        // src.connect(analyser)
-        analyser.fftSize = 256
-
-        let buffer_length = analyser.frequencyBinCount
-        var data_array = new Uint8Array(buffer_length)
-
         renderFrame()
 
+        //* Add listener
         this.$video.addEventListener('loadedmetadata', this.initSCD.bind(this))
 
         this.$video.addEventListener('scenechange', event => {
-            this.$message.textContent = 'Change video frames'
             this.visibleMessage()
+        })
+
+        this.$video.addEventListener('animalfound', event => {
+            this.pixelPoint.push(event.detail.diff)
         })
     }
     initSCD(){
@@ -86,17 +101,31 @@ class Detector {
         const $message = document.createElement('div')
 
         $message.classList.add('ext-message')
-        document.querySelector('#content').appendChild($message)
+        $message.insertAdjacentHTML('beforeend', /*html*/`
+            <div class="info">
+                Warning message
+            </div>
+            <div class="volume-detector">
+                <canvas class="volume-detector__canvas"></canvas>
+            </div>
+            <div class="frames-detector">
+                <canvas class="frames-detector__canvas"></canvas>
+            </div>
+        `)
+
+        document.body.appendChild($message)
         
         return $message
     }
 
+    //* Hidden message after time value
     hiddenMessage(time = 0){
         this.timeOutMessage = setTimeout(() => {
             this.$message.classList.remove('active')
         }, time)
     }
 
+    //* Open message (active add class)
     visibleMessage(){
         clearTimeout(this.timeOutMessage)
         this.$message.classList.add('active')
