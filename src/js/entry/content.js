@@ -1,6 +1,7 @@
 class Detector {
     $video = null
     $message = null
+    timeOutMessage = null
 
     constructor(config){
         
@@ -10,14 +11,65 @@ class Detector {
         document.addEventListener('DOMContentLoaded', this.contentLoaded.bind(this))
     }
 
+    middleValueArray(list){
+        let sumNumbers = 0
+
+        list.forEach(num => {
+            sumNumbers += num
+        })
+
+        const middleValue = sumNumbers / list.length
+
+        return Math.round(middleValue)
+    }
+
     contentLoaded(){
         this.$message = this.createMessage()
+
         this.$video = document.querySelector('video')
+
+        let prevVolumeValue = 0
+
+        const audioCtx = new AudioContext()
+        const src = audioCtx.createMediaElementSource(this.$video)
+        const analyser = audioCtx.createAnalyser()
+
+        src.connect(analyser)
+
+        const bufferLength = analyser.frequencyBinCount
+        const dataArray = new Uint8Array(bufferLength)
+        analyser.getByteFrequencyData(dataArray)
+
+        // Change volume video
+        let renderFrame = () => {
+            requestAnimationFrame(renderFrame)
+
+            analyser.getByteFrequencyData(data_array)
+            
+            const currentVolumeValue = this.middleValueArray(data_array)
+
+            if (Math.abs(currentVolumeValue - prevVolumeValue) > 50){
+                this.$message.textContent = 'Change audio frames'
+                this.visibleMessage()
+
+                prevVolumeValue = currentVolumeValue
+            }
+        }
+
+        src.connect(analyser)
+        analyser.fftSize = 256
+
+        let buffer_length = analyser.frequencyBinCount
+        var data_array = new Uint8Array(buffer_length)
+
+        renderFrame()
 
         this.$video.addEventListener('loadedmetadata', this.initSCD.bind(this))
 
         this.$video.addEventListener('scenechange', event => {
-            this.changeFrames()
+            console.log(event)
+            this.$message.textContent = 'Change video frames'
+            this.visibleMessage()
         })
     }
     initSCD(){
@@ -29,31 +81,25 @@ class Detector {
         d.start()
     }
 
-    changeFrames(){
-        this.visibleMessage()
-    }
-
     createMessage(){
         const $message = document.createElement('div')
 
         $message.classList.add('ext-message')
-        $message.insertAdjacentHTML('beforeend', /*html*/`
-            <span>Warning message</span>
-        `)
         document.querySelector('#content').appendChild($message)
         
         return $message
     }
 
     hiddenMessage(time = 0){
-        setTimeout(() => {
+        this.timeOutMessage = setTimeout(() => {
             this.$message.classList.remove('active')
         }, time)
     }
 
     visibleMessage(){
+        clearTimeout(this.timeOutMessage)
         this.$message.classList.add('active')
-        this.hiddenMessage(3000)
+        this.hiddenMessage(1500)
     }
 }
 
