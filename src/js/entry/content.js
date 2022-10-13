@@ -14,10 +14,24 @@ function lastElementArray(list){
     return list[list.length - 1]
 }
 
-function lineDrawCanvas(ctx, list){
-    for (let [x, y] of list){
+function renderModel(ctx, data, options = {}){
+    ctx.strokeStyle = options.color
+    ctx.lineWidth = 4
+
+    ctx.beginPath()
+
+    var x = 0
+
+    for (let i = 0; i < data.length; i++ ) {
+        let y = data[i]
+
         ctx.lineTo(x, y)
+
+        x+=5
     }
+
+    ctx.stroke()
+    ctx.closePath()
 }
 
 
@@ -26,15 +40,18 @@ class Detector {
     $message = null
     timeOutMessage = null
 
-    volumeCanvasProp = {
-        point: [],
-    }
-    framesCanvasProp = {
-        point: [],
+    graphCanvasProp = {
+        $el: null,
+        context: null,
+        width: null,
+        height: null,
     }
 
-    constructor(config){
-        
+    volumeGraphProp = {
+        point: [],
+    }
+    framesGraphProp = {
+        point: [],
     }
 
     //* Init Detector plugin
@@ -80,9 +97,6 @@ class Detector {
             this.visibleMessage()
         })
 
-        //* count iteration animalfound event
-        let countAnimalFound = 0
-
         //* Set frames video
         this.$video.addEventListener('animalfound', event => {
             analyser.getByteFrequencyData(data_array)
@@ -97,71 +111,37 @@ class Detector {
             }
 
             // Add point chart
-            this.framesCanvasProp.point.push([countAnimalFound, this.framesCanvasProp.height - 1 - currentFrameValue])
-            this.volumeCanvasProp.point.push([countAnimalFound, this.volumeCanvasProp.height - 1 - currentVolumeValue])
+            this.framesGraphProp.point.push(this.graphCanvasProp.height - 2 - currentFrameValue)
+            this.volumeGraphProp.point.push(this.graphCanvasProp.height - 2 - currentVolumeValue)
             
-            this.drawChart(countAnimalFound)
+            this.framesGraphProp.point = this.framesGraphProp.point.slice(-50)
+            this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-50)
 
-            countAnimalFound += 10
+            this.drawChart()
         })
     }
     
-    drawChart(count){
-        this.volumeCanvasProp.context.clearRect(0, 0, this.volumeCanvasProp.width, this.volumeCanvasProp.height)
-        this.framesCanvasProp.context.clearRect(0, 0, this.framesCanvasProp.width, this.framesCanvasProp.height)
-        
-        
-        this.framesCanvasProp.context.beginPath()
-        
-        lineDrawCanvas(this.framesCanvasProp.context, this.framesCanvasProp.point)
+    drawChart(){
+        this.graphCanvasProp.context.clearRect(0, 0, this.graphCanvasProp.width, this.graphCanvasProp.height)
 
-        this.framesCanvasProp.context.strokeStyle = '#ff0000'
-        this.framesCanvasProp.context.lineWidth = 4
-        this.framesCanvasProp.context.stroke()
-        this.framesCanvasProp.context.closePath()
-
-
-        this.volumeCanvasProp.context.beginPath()
-
-        lineDrawCanvas(this.volumeCanvasProp.context, this.volumeCanvasProp.point)
-
-        this.volumeCanvasProp.context.strokeStyle = '#ff0000'
-        this.volumeCanvasProp.context.lineWidth = 4
-        this.volumeCanvasProp.context.stroke()
-        this.volumeCanvasProp.context.closePath()
+        renderModel(this.graphCanvasProp.context, this.framesGraphProp.point, {color: '#c62828'})
+        renderModel(this.graphCanvasProp.context, this.volumeGraphProp.point, {color: '#1a237e'})
     }
 
     //* Canvas init
     canvasInit(){
-        // Get canvas node
-        this.framesCanvasProp.$el = document.querySelector('.frames-detector__canvas')
-        this.volumeCanvasProp.$el = document.querySelector('.volume-detector__canvas')
-        
-        // Set size frame canvas
-        this.framesCanvasProp.width = 600
-        this.framesCanvasProp.height = 200
-
-        // Set size volume canvas
-        this.volumeCanvasProp.width = 600
-        this.volumeCanvasProp.height = 200
-
-        // Get context canvas
-        this.framesCanvasProp.context = this.framesCanvasProp.$el.getContext('2d')
-        this.volumeCanvasProp.context = this.volumeCanvasProp.$el.getContext('2d')
+        this.graphCanvasProp.$el = document.querySelector('#graph-canvas')
+        this.graphCanvasProp.context = this.graphCanvasProp.$el.getContext('2d')
+        this.graphCanvasProp.width = 600
+        this.graphCanvasProp.height = 200
 
         // Set size node canvas
-        this.framesCanvasProp.$el.style.width = this.framesCanvasProp.width / 2 + 'px'
-        this.framesCanvasProp.$el.style.height = this.framesCanvasProp.height / 2 + 'px'
-
-        this.volumeCanvasProp.$el.style.width = this.volumeCanvasProp.width / 2 + 'px'
-        this.volumeCanvasProp.$el.style.height = this.volumeCanvasProp.height / 2 + 'px'
+        this.graphCanvasProp.$el.style.width = this.graphCanvasProp.width / 2 + 'px'
+        this.graphCanvasProp.$el.style.height = this.graphCanvasProp.height / 2 + 'px'
 
         // Set size chart canvas
-        this.framesCanvasProp.$el.width = this.framesCanvasProp.width
-        this.framesCanvasProp.$el.height = this.framesCanvasProp.height
-
-        this.volumeCanvasProp.$el.width = this.volumeCanvasProp.width
-        this.volumeCanvasProp.$el.height = this.volumeCanvasProp.height
+        this.graphCanvasProp.$el.width = this.graphCanvasProp.width
+        this.graphCanvasProp.$el.height = this.graphCanvasProp.height
     }
 
     //* Init SCD lib
@@ -180,17 +160,24 @@ class Detector {
 
         $message.classList.add('ext-message')
         $message.insertAdjacentHTML('beforeend', /*html*/`
-            <div class="title">
+            <div class="ext-message__title title">
                 Warning message
             </div>
-            <div class="volume-detector detector">
-                <div class="volume-detector__label ext-message__label">Change Volume</div>
-                <canvas class="volume-detector__canvas"></canvas>
+            <div class="ext-message__graph graph">
+                <div class="graph__label">Change graph</div>
+                <canvas class="graph__canvas" id="graph-canvas"></canvas>
             </div>
-            <div class="frames-detector detector">
-            <div class="frames-detector__label ext-message__label">Change Frames</div>
-                <canvas class="frames-detector__canvas"></canvas>
-            </div>
+        <div class="ext-message__info info">
+            <ul class="info__list list">
+                <li class="list__item">
+                    red: <span class="frames-color">frames</span>
+                </li>
+                <li class="list__item">
+                    blue: <span class="volume-color">volume</span>
+                </li>
+            </ul>
+        </div>
+
         `)
 
         document.body.appendChild($message)
