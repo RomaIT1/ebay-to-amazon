@@ -1,25 +1,41 @@
 .ext-message {
-  visibility: hidden;
-  opacity: 0;
+  /* visibility: hidden;
+  opacity: 0; */
   position: fixed;
   top: 30px;
   right: 20px;
+  font-size: 20px;
   padding: 20px;
   background-color: #fff;
   z-index: 10000;
-  font-size: 25px;
   border-radius: 5px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.2);
   transition-duration: 300ms;
-}
-
-#content {
-  position: relative;
+  text-align: center;
 }
 
 .ext-message.active {
   visibility: visible;
   opacity: 1;
   top: 20px;
+}
+
+.ext-message__label {
+  margin-bottom: 5px;
+}
+
+.detector {
+  margin-bottom: 10px;
+}
+
+.title {
+  margin-bottom: 20px;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.ext-message canvas {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
 }
