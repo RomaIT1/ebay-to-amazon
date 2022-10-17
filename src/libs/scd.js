@@ -156,55 +156,47 @@ if (videoEl.readyState < 3) {
 */
 function init() {
     for (var k in options) {
-    switch (k) {
-        case 'mode':
-        opts.mode = '' + options[k];
-        break;
-        case 'step':
-        opts.step = +/** @type {number} */ (options[k]);
-        break;
-        case 'step_width':
-        opts.step_width = +/** @type {number} */ (options[k]);
-        break;
-        case 'step_height':
-        opts.step_height = +/** @type {number} */ (options[k]);
-        break;
-        case 'minSceneDuration':
-        opts.minSceneDuration = +/** @type {number} */ (options[k]);
-        break;
-        case 'threshold':
-        // opts.threshold is set between 0 and MAX_DIFF_100 interval to save on computation later.
-        opts.threshold = +/** @type {number} */ (options[k]) * MAX_DIFF_100;
-        break;
-        case 'debug':
-        if (DEBUG)
-            opts.debug = !!options[k];
-        break;
-    }
+        switch (k) {
+            case 'mode':
+                opts.mode = '' + options[k];
+                break;
+            case 'step':
+                opts.step = +/** @type {number} */ (options[k]);
+                break;
+            case 'step_width':
+                opts.step_width = +/** @type {number} */ (options[k]);
+                break;
+            case 'step_height':
+                opts.step_height = +/** @type {number} */ (options[k]);
+                break;
+            case 'minSceneDuration':
+                opts.minSceneDuration = +/** @type {number} */ (options[k]);
+                break;
+            case 'threshold':
+                // opts.threshold is set between 0 and MAX_DIFF_100 interval to save on computation later.
+                opts.threshold = +/** @type {number} */ (options[k]) * MAX_DIFF_100;
+                break;
+            case 'debug':
+                if (DEBUG)
+                    opts.debug = !!options[k];
+                break;
+        }
     }
 
     if (opts.step != 0) {
-    opts.step_width = opts.step_height = opts.step;
+        opts.step_width = opts.step_height = opts.step;
     }
-
-    // First we set default values to video tag size.
-    // Values are annotated as strings to keep Closure Compiler happy.
-    // if (!videoEl.width) {
-    // videoEl.width = /** @type {string} */ videoEl.videoWidth;
-    // }
-    // if (!videoEl.height) {
-    // videoEl.height = /** @type {string} */ videoEl.videoHeight;
-    // }
-    var videoEl_width = /** @type {string} */ videoEl.videoWidth;
-    var videoEl_height = /** @type {string} */ videoEl.videoHeight;
+    
+    var videoEl_width = videoEl.videoWidth;
+    var videoEl_height = videoEl.videoHeight;
 
     // Then, we calculate apparent video size to avoid passing out of bound values to canvas.drawImage().
     if (videoEl.videoWidth / videoEl.videoHeight > videoEl_width / videoEl_height) {
-    width = /** @type {number} */ videoEl_width;
-    height = videoEl.videoHeight / videoEl.videoWidth * videoEl_width;
+        width = videoEl_width;
+        height = videoEl.videoHeight / videoEl.videoWidth * videoEl_width;
     } else {
-    width = videoEl.videoWidth / videoEl.videoHeight * videoEl_height;
-    height = /** @type {number} */ videoEl_height;
+        width = videoEl.videoWidth / videoEl.videoHeight * videoEl_height;
+        height = videoEl_height;
     }
 
     canvasA.width = canvasB.width = opts.step_width;
@@ -217,9 +209,9 @@ function init() {
 
     debugContainer = document.getElementById('__scd-debug');
     if (DEBUG && opts.debug && !debugContainer) {
-    debugContainer = document.createElement('div');
-    debugContainer.id = '__scd-debug';
-    (document.body || document.getElementsByTagName('body')[0]).appendChild(debugContainer);
+        debugContainer = document.createElement('div');
+        debugContainer.id = '__scd-debug';
+        (document.body || document.getElementsByTagName('body')[0]).appendChild(debugContainer);
     }
 
     // Launch the scene detection process differently depending on the mode.
@@ -247,16 +239,7 @@ function init() {
 
     videoEl.addEventListener('timeupdate', playbackModeEvent, false);
     videoEl.addEventListener('ended', videoEndedEvent, false);
-
-    // videoEl.play();
     };
-
-    /**
-     * Return the median value from an array.
-     * @param {Array.<number>} a An array of numbers.
-     * @return {number}
-     */
-
 
     getMedian = a => {
         a.sort(function(a,b){return a-b})
@@ -267,14 +250,8 @@ function init() {
             return(a[ ((_step_sq / 2) - 1) ]+a[ (_step_sq / 2) ]) / 2
         }
     }
-
-    // videoEl.removeEventListener('durationchange', init, false);
 }
 
-/**
-* Function triggered by seeked event on FastForwardMode.
-* @this {HTMLVideoElement}
-*/
 function fastForwardModeEvent() {
     // @fixme: Bug on Opera. duration is not always defined.
     if (videoEl.ended || currentTime > videoEl.duration) {
@@ -293,12 +270,14 @@ function fastForwardModeEvent() {
 * @this {HTMLVideoElement}
 */
 function playbackModeEvent() {
-    if (this.currentTime - lastCurrentTime >= opts.minSceneDuration) {
+    // if (this.currentTime - lastCurrentTime >= opts.minSceneDuration) {
+
+    // }
+
     currentTime = this.currentTime;
     detectSceneChange();
 
     lastCurrentTime = this.currentTime;
-    }
 }
 
 /**
@@ -309,7 +288,7 @@ function detectSceneChange() {
     
     var diff = computeDifferences(ctxA, ctxB);
 
-    const catFound = new CustomEvent('animalfound', {
+    const catFound = new CustomEvent('medianFound', {
         detail: {
             diff: diff
         }
@@ -319,40 +298,34 @@ function detectSceneChange() {
 
     if (diff > opts.threshold) {
     
-    var _sceneChangeEvent = document.createEvent('Event');
-    _sceneChangeEvent.initEvent('scenechange', true, true);
-    videoEl.dispatchEvent(_sceneChangeEvent);
+        var _sceneChangeEvent = document.createEvent('Event')
+        _sceneChangeEvent.initEvent('scenechange', true, true)
+        videoEl.dispatchEvent(_sceneChangeEvent)
 
-    sceneTimecodes.push(currentTime);
-    if (DEBUG && opts.debug) {
-        var /** @type {Element} */ tmpContainer = document.createElement('div'),
-            /** @type {HTMLCanvasElement} */ tmpCanvasA = createCanvas();
-        tmpCanvasA.width = width / 2;
-        tmpCanvasA.height = height / 2;
-        tmpCanvasA.getContext('2d').drawImage(videoEl, 0, 0, videoEl.videoWidth, videoEl.videoHeight, 0, 0, width / 2, height / 2);
-        tmpContainer.appendChild(document.createTextNode(formatTime(currentTime)));
-        tmpContainer.appendChild(document.createElement('br'));
-        tmpContainer.appendChild(tmpCanvasA);
-        tmpContainer.appendChild(document.createElement('br'));
-        tmpContainer.appendChild(document.createTextNode('med: ' + Math.round(diff / MAX_DIFF_100) + '%'));
-        debugContainer.appendChild(tmpContainer);
-    }
+        sceneTimecodes.push(currentTime);
+        if (DEBUG && opts.debug) {
+            var /** @type {Element} */ tmpContainer = document.createElement('div'),
+                /** @type {HTMLCanvasElement} */ tmpCanvasA = createCanvas()
+            tmpCanvasA.width = width / 2;
+            tmpCanvasA.height = height / 2;
+            tmpCanvasA.getContext('2d').drawImage(videoEl, 0, 0, videoEl.videoWidth, videoEl.videoHeight, 0, 0, width / 2, height / 2);
+            tmpContainer.appendChild(document.createTextNode(formatTime(currentTime)));
+            tmpContainer.appendChild(document.createElement('br'));
+            tmpContainer.appendChild(tmpCanvasA);
+            tmpContainer.appendChild(document.createElement('br'));
+            tmpContainer.appendChild(document.createTextNode('med: ' + Math.round(diff / MAX_DIFF_100) + '%'));
+            debugContainer.appendChild(tmpContainer);
+        }
     }
 
     ctxB.drawImage(canvasA, 0, 0, opts.step_width, opts.step_height, 0, 0, opts.step_width, opts.step_height);
 }
 
-/**
-* Return various statistics about zone differences of 2 frames.
-* @param {Object} ctxA The canvas context of image 1.
-* @param {Object} ctxB The canvas context of image 2.
-* @return {Array.<number>} Various statistics about input image differences.
-*/
 function computeDifferences(ctxA, ctxB) {
-    var /** @type {Array.<number>} */ diff = [],
-        /** @type {Array.<number>} */ colorsA = ctxA.getImageData(0, 0, opts.step_width, opts.step_height).data,
-        /** @type {Array.<number>} */ colorsB = ctxB.getImageData(0, 0, opts.step_width, opts.step_height).data,
-        /** @type {number} */ i = 0;
+    var diff = [],
+        colorsA = ctxA.getImageData(0, 0, opts.step_width, opts.step_height).data,
+        colorsB = ctxB.getImageData(0, 0, opts.step_width, opts.step_height).data,
+        i = 0;
 
     for (; i < canvasContextImageDataLength; i = i + 4) {
     diff.push(getColorDistance(colorsA[i], colorsA[i + 1], colorsA[i + 2], colorsB[i], colorsB[i + 1], colorsB[i + 2]));
@@ -361,24 +334,11 @@ function computeDifferences(ctxA, ctxB) {
     return getMedian(diff);
 }
 
-/**
-* Calculates the distance between 2 colors RGB compounds.
-* @param {number} RA Red compound value of color A.
-* @param {number} GA Green compound value of color A.
-* @param {number} BA Blue compound value of color A.
-* @param {number} RB Red compound value of color B.
-* @param {number} GB Green compound value of color B.
-* @param {number} BB Blue compound value of color B.
-* @return {number} The distance.
-*/
 function getColorDistance(RA, GA, BA, RB, GB, BB) {
     //return Math.sqrt(Math.pow(RA - RB, 2) + Math.pow(GA - GB, 2) + Math.pow(BA - BB, 2));
     return Math.sqrt((RA - RB) * (RA - RB) + (GA - GB) * (GA - GB) + (BA - BB) * (BA - BB));
 }
 
-/**
-* Function called when video ends.
-*/
 function videoEndedEvent() {
     if (callback) {
     callback(sceneTimecodes);
@@ -386,9 +346,7 @@ function videoEndedEvent() {
     _stop();
 }
 
-/**
-* Temporary halt the scene detection process. Use Scd.start() again to resume process.
-*/
+
 function pause() {
     if (stop) {
     return;
@@ -402,31 +360,23 @@ function pause() {
     videoEl.pause();
 }
 
-/**
-* Cancel the scene detection process.
-*/
+
 function _stop() {
     pause();
 
-    // Remove event listeners.
     if (opts.mode === 'FastForwardMode') {
-    videoEl.removeEventListener('seeked', fastForwardModeEvent, false);
+        videoEl.removeEventListener('seeked', fastForwardModeEvent, false);
 
-    // Restore video element controls to its original state.
-    videoEl.controls = controls;
+        // Restore video element controls to its original state.
+        videoEl.controls = controls;
     } else {
-    videoEl.removeEventListener('timeupdate', playbackModeEvent, false);
-    videoEl.removeEventListener('ended', videoEndedEvent, false);
+        videoEl.removeEventListener('timeupdate', playbackModeEvent, false);
+        videoEl.removeEventListener('ended', videoEndedEvent, false);
     }
 
     stop = true;
 }
 
-/**
-* Return a human readable time from a number of seconds.
-* @param {number} num A duration in seconds.
-* @return {string} A string in the form of `hh:mm:ss.ss`.
-*/
 function formatTime(num) {
     var hours = Math.floor(num / 3600);
     var minutes = Math.floor((num - (hours * 3600)) / 60);

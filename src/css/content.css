@@ -1,6 +1,6 @@
 .ext-message {
-  visibility: hidden;
-  opacity: 0;
+  /* visibility: hidden;
+  opacity: 0; */
   position: fixed;
   top: 30px;
   right: 20px;

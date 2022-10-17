@@ -81,14 +81,13 @@ class Detector {
         analyser.connect(audioCtx.destination)
         src.connect(analyser)
 
-        const bufferLength = analyser.frequencyBinCount
-        const dataArray = new Uint8Array(bufferLength)
-        analyser.getByteFrequencyData(dataArray)
-
         analyser.fftSize = 256
 
-        let buffer_length = analyser.frequencyBinCount
-        var data_array = new Uint8Array(buffer_length)
+        const bufferLength = analyser.frequencyBinCount
+
+        const dataArray = new Uint8Array(bufferLength)
+
+        analyser.getByteTimeDomainData(dataArray)
 
         //* Add listener
         this.$video.addEventListener('loadedmetadata', this.initSCD.bind(this))
@@ -98,10 +97,10 @@ class Detector {
         })
 
         //* Set frames video
-        this.$video.addEventListener('animalfound', event => {
-            analyser.getByteFrequencyData(data_array)
+        this.$video.addEventListener('medianFound', event => {
+            analyser.getByteTimeDomainData(dataArray)
             
-            const currentVolumeValue = middleValueArray(data_array)
+            const currentVolumeValue = middleValueArray(dataArray)
             const currentFrameValue = event.detail.diff
 
             if (Math.abs(currentVolumeValue - prevVolumeValue) > 50 * ( Math.round(this.$video.volume * 10) / 10 )){
@@ -114,8 +113,8 @@ class Detector {
             this.framesGraphProp.point.push(this.graphCanvasProp.height - 2 - currentFrameValue)
             this.volumeGraphProp.point.push(this.graphCanvasProp.height - 2 - currentVolumeValue)
             
-            this.framesGraphProp.point = this.framesGraphProp.point.slice(-50)
-            this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-50)
+            this.framesGraphProp.point = this.framesGraphProp.point.slice(-100)
+            this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-100)
 
             this.drawChart()
         })
