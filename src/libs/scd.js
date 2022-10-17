@@ -137,7 +137,7 @@ var opts = {
     step_width: 50,
     step_height: 50,
     minSceneDuration: 0.25,
-    threshold: 110.4182, // 25 * Math.sqrt(255 * 255 * 3) / 100,
+    threshold: 60, // 25 * Math.sqrt(255 * 255 * 3) / 100,
     debug: false
 };
 

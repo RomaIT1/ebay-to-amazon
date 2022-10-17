@@ -93,6 +93,7 @@ class Detector {
         this.$video.addEventListener('loadedmetadata', this.initSCD.bind(this))
 
         this.$video.addEventListener('scenechange', event => {
+            console.log('laskflaskfaslkf')
             this.visibleMessage()
         })
 
@@ -102,8 +103,8 @@ class Detector {
             
             const currentVolumeValue = middleValueArray(dataArray)
             const currentFrameValue = event.detail.diff
-
-            if (Math.abs(currentVolumeValue - prevVolumeValue) > 50 * ( Math.round(this.$video.volume * 10) / 10 )){
+            
+            if (Math.abs(currentVolumeValue - prevVolumeValue) > Math.round(30 * (this.$video.volume) )){
                 this.visibleMessage()
 
                 prevVolumeValue = currentVolumeValue
