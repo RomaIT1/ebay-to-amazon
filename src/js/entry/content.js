@@ -81,6 +81,7 @@ class Detector {
         analyser.connect(audioCtx.destination)
         src.connect(analyser)
 
+        analyser.smoothingTimeConstant = 0;
         analyser.fftSize = 256
 
         const bufferLength = analyser.frequencyBinCount
@@ -99,23 +100,38 @@ class Detector {
 
         //* Set frames video
         this.$video.addEventListener('medianFound', event => {
-            analyser.getByteTimeDomainData(dataArray)
+            // analyser.getByteTimeDomainData(dataArray)
+            analyser.getByteFrequencyData(dataArray)
             
-            const currentVolumeValue = Math.abs(middleValueArray(dataArray) - 128)
+            // const currentVolumeValue = Math.abs(middleValueArray(dataArray) - 128)
 
-            console.log(currentVolumeValue)
+            let currentVolumeValue = 0;
 
+            dataArray.forEach((db_value)=>{
+                currentVolumeValue += db_value;
+            })
+
+            currentVolumeValue = currentVolumeValue / 255 / bufferLength;
+
+            
             const currentFrameValue = event.detail.diff
+            console.log(currentFrameValue)
             
-            if (Math.abs(currentVolumeValue - prevVolumeValue) > Math.round(30 * (this.$video.volume) )){
-                this.visibleMessage()
-
-                prevVolumeValue = currentVolumeValue
+            if ( currentVolumeValue > prevVolumeValue ) {
+                var volume_diff = currentVolumeValue - prevVolumeValue;
+            } else {
+                var volume_diff = 0;
             }
+
+            prevVolumeValue = currentVolumeValue
+
+            // if (Math.abs(currentVolumeValue - prevVolumeValue) > Math.round(30 * (this.$video.volume) )){
+            //     this.visibleMessage()
+            // }
 
             // Add point chart
             this.framesGraphProp.point.push(this.graphCanvasProp.height - 3 - currentFrameValue)
-            this.volumeGraphProp.point.push(this.graphCanvasProp.height - 3 - currentVolumeValue)
+            this.volumeGraphProp.point.push(this.graphCanvasProp.height - 3 - volume_diff * this.graphCanvasProp.height)
             
             this.framesGraphProp.point = this.framesGraphProp.point.slice(-100)
             this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-100)
