@@ -2,7 +2,7 @@ function middleValueArray(list){
     let sumNumbers = 0
 
     list.forEach(num => {
-        sumNumbers += num
+        sumNumbers += Math.abs(num)
     })
 
     const middleValue = sumNumbers / list.length
@@ -101,7 +101,10 @@ class Detector {
         this.$video.addEventListener('medianFound', event => {
             analyser.getByteTimeDomainData(dataArray)
             
-            const currentVolumeValue = middleValueArray(dataArray)
+            const currentVolumeValue = Math.abs(middleValueArray(dataArray) - 128)
+
+            console.log(currentVolumeValue)
+
             const currentFrameValue = event.detail.diff
             
             if (Math.abs(currentVolumeValue - prevVolumeValue) > Math.round(30 * (this.$video.volume) )){
@@ -111,8 +114,8 @@ class Detector {
             }
 
             // Add point chart
-            this.framesGraphProp.point.push(this.graphCanvasProp.height - 2 - currentFrameValue)
-            this.volumeGraphProp.point.push(this.graphCanvasProp.height - 2 - currentVolumeValue)
+            this.framesGraphProp.point.push(this.graphCanvasProp.height - 3 - currentFrameValue)
+            this.volumeGraphProp.point.push(this.graphCanvasProp.height - 3 - currentVolumeValue)
             
             this.framesGraphProp.point = this.framesGraphProp.point.slice(-100)
             this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-100)
