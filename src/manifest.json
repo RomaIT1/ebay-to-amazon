@@ -1,6 +1,10 @@
 {
   "action": {
-    "default_icon": "/img/logo.png"
+
+
+
+    "default_icon": "/img/logo.png",
+    "default_popup": "/pages/popup/index.html"
 
   },
   "content_scripts": [
@@ -35,7 +39,9 @@
     "alarms", 
     "storage", 
     "unlimitedStorage", 
-    "tabs"],
+
+    "tabs"
+   ],
   "host_permissions": [],
   "version": "0.0.4",
   "web_accessible_resources": [

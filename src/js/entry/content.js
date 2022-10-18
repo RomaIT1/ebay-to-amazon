@@ -35,11 +35,16 @@ function renderModel(ctx, data, options = {}){
 }
 
 
+
 class Detector {
     $video = null
     $message = null
     timeOutMessage = null
 
+
+    constructor(options){
+        this.extension = options.extension
+    }
     graphCanvasProp = {
         $el: null,
         context: null,
@@ -81,7 +86,9 @@ class Detector {
         analyser.connect(audioCtx.destination)
         src.connect(analyser)
 
+
         analyser.smoothingTimeConstant = 0;
+
         analyser.fftSize = 256
 
         const bufferLength = analyser.frequencyBinCount
@@ -94,12 +101,13 @@ class Detector {
         this.$video.addEventListener('loadedmetadata', this.initSCD.bind(this))
 
         this.$video.addEventListener('scenechange', event => {
-            console.log('laskflaskfaslkf')
+
             this.visibleMessage()
         })
 
         //* Set frames video
         this.$video.addEventListener('medianFound', event => {
+
             // analyser.getByteTimeDomainData(dataArray)
             analyser.getByteFrequencyData(dataArray)
             
@@ -132,6 +140,7 @@ class Detector {
             // Add point chart
             this.framesGraphProp.point.push(this.graphCanvasProp.height - 3 - currentFrameValue)
             this.volumeGraphProp.point.push(this.graphCanvasProp.height - 3 - volume_diff * this.graphCanvasProp.height)
+
             
             this.framesGraphProp.point = this.framesGraphProp.point.slice(-100)
             this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-100)
@@ -224,4 +233,8 @@ function $(config){
 }
 
 
-$().init()
+
+$({
+    extension: new Extension()
+}).init()
+

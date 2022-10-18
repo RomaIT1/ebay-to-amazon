@@ -1,0 +1,17 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    overflow: auto;
+    left: -100%;
+    width: 60%;
+    background-color: #FAFAFA;
+    box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 200;
+    padding: 20px 15px;
+    transition-duration: 300ms;
+}
+
+.sidebar.active {
+    left: 0;
+}
