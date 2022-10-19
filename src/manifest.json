@@ -1,54 +1,39 @@
 {
-  "action": {
+	"action": {
+		"default_icon": "/img/logo.png",
+		"default_popup": "/pages/popup/index.html"
+	},
+	"content_scripts": [
+		{
+			"all_frames": false,
+			"js": ["/libs/scd.js", "/js/content.js"],
+			"css": ["/css/content.css"],
+			"matches": ["https://www.youtube.com/*"],
+			"run_at": "document_start"
+		}
+	],
+	"content_security_policy": {
+		"extension_page": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+	},
+	"background": {
+		"service_worker": "/js/background.js"
+	},
 
-
-
-    "default_icon": "/img/logo.png",
-    "default_popup": "/pages/popup/index.html"
-
-  },
-  "content_scripts": [
-    {
-      "all_frames": false,
-      "js": [
-        "/libs/scd.js",
-        "/js/content.js"
-      ],
-      "css": [
-        "/css/content.css"
-      ],
-      "matches": ["https://www.youtube.com/*"],
-      "run_at": "document_start"
-    }
-  ],
-  "content_security_policy": {
-    "extension_page":"script-src 'self' 'wasm-unsafe-eval'; object-src 'self'" 
-  },
-  "background": {
-    "service_worker": "/js/background.js"
-  },
-
-  "description": "None",
-  "icons": {
-    "128": "/img/logo.png",
-    "512": "/img/logo.png"
-  },
-  "manifest_version": 3,
-  "name": "youtube-change-detector",
-  "permissions": [
-    "alarms", 
-    "storage", 
-    "unlimitedStorage", 
-
-    "tabs"
-   ],
-  "host_permissions": [],
-  "version": "0.0.4",
-  "web_accessible_resources": [
-    {
-      "resources": ["*"],
-      "matches": ["https://*/*"],
-      "extension_ids": []
-    }
-  ]
+	"description": "None",
+	"icons": {
+		"128": "/img/logo.png",
+		"512": "/img/logo.png"
+	},
+	"manifest_version": 3,
+	"name": "youtube-change-detector",
+	"permissions": ["alarms", "storage", "unlimitedStorage", "tabs"],
+	"host_permissions": [],
+	"version": "0.0.4",
+	"web_accessible_resources": [
+		{
+			"resources": ["*"],
+			"matches": ["https://*/*"],
+			"extension_ids": []
+		}
+	]
 }

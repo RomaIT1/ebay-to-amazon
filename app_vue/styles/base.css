@@ -5,112 +5,112 @@ white = #FAFAFA
 */
 
 body {
-    font-size: 16px;
-    line-height: 150%;
-    font-family: 'Roboto', sans-serif;
-    color: #212121;
+	font-size: 16px;
+	line-height: 150%;
+	font-family: "Roboto", sans-serif;
+	color: #212121;
 }
 
 .main {
-    position: relative;
-    padding: 50px 0 0 0;
+	position: relative;
+	padding: 50px 0 0 0;
 }
 
 .container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 0 10px;
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 0 10px;
 }
 
 .popup-close button {
-   font-size: 25px;
+	font-size: 25px;
 }
 
 /* Button basic style */
 .button {
-    padding: 8px 15px;
-    border-radius: 3px;
-    transition-duration: 300ms;
-    font-size: 14px;
-    color: #FAFAFA;
-    font-weight: 500;
+	padding: 8px 15px;
+	border-radius: 3px;
+	transition-duration: 300ms;
+	font-size: 14px;
+	color: #fafafa;
+	font-weight: 500;
 }
 
 .button--primary {
-    background-color: #37474F;
+	background-color: #37474f;
 }
 
 .button--warning {
-    background-color: #FFB300;
+	background-color: #ffb300;
 }
 
 .button--danger {
-    background-color: #D84315;
+	background-color: #d84315;
 }
 
 .button--info {
-    background-color: #9575cd;
+	background-color: #9575cd;
 }
 
 .button:hover {
-    opacity: 0.8;
+	opacity: 0.8;
 }
 
 /* Form basic style */
 .form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .form__field-wrapper {
-    width: 80%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 10px;
+	width: 80%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 10px;
 }
 
 .field {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 5px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	margin-bottom: 5px;
 }
 
 .field__label {
-    margin-bottom: 5px;
-    opacity: 0.9;
-    font-size: 12px;
+	margin-bottom: 5px;
+	opacity: 0.9;
+	font-size: 12px;
 }
 
 .field input,
 .field textarea {
-    width: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 3px;
-    padding: 8px 15px;
-    font-size: 14px;
+	width: 100%;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+	border-radius: 3px;
+	padding: 8px 15px;
+	font-size: 14px;
 }
 
 /* Title basic style */
 .title {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .title__main {
-    font-weight: 700;
-    font-size: 30px;
-    line-height: 150%;
-    margin-bottom: 10px;
+	font-weight: 700;
+	font-size: 30px;
+	line-height: 150%;
+	margin-bottom: 10px;
 }
 
 .title__sub {
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 140%;
-    margin-bottom: 10px;
+	font-weight: 500;
+	font-size: 20px;
+	line-height: 140%;
+	margin-bottom: 10px;
 }
