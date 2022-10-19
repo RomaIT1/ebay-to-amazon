@@ -1,5 +1,5 @@
-function lastElementArray(list) {
-	return list[list.length - 1];
+function _isUndefined(value) {
+	return typeof value === "undefined";
 }
 
 function renderModel(ctx, data, options = {}) {
@@ -24,9 +24,6 @@ function renderModel(ctx, data, options = {}) {
 
 class Detector {
 	$video = null;
-	timeOutMessage = null;
-
-	constructor(options) {}
 	graphCanvasProp = {
 		$el: null,
 		context: null,
@@ -41,21 +38,26 @@ class Detector {
 		point: [],
 	};
 
-	//* Init Detector plugin
-	init() {
-		document.addEventListener(
-			"DOMContentLoaded",
-			this.contentLoaded.bind(this)
-		);
+	sceneChangeListener = () => {};
+
+	constructor(options = {}) {
+		this.sceneChangeListener = _isUndefined(options.sceneChangeListener)
+			? this.sceneChangeListener
+			: options.sceneChangeListener;
+
+		this.init();
 	}
 
-	//* Method run if document loaded
-	contentLoaded() {
+	//* Init Detector plugin
+	init() {
 		//* Create window message
 		this.$message = this.createGraph();
 
 		//* Get YouTube video html element
 		this.$video = document.querySelector("video");
+
+		// //* If video is not defined (finish programm)
+		// if (!this.$video) return;
 
 		//* Get detector canvas
 		this.canvasInit();
@@ -85,9 +87,10 @@ class Detector {
 		this.$video.addEventListener("loadedmetadata", this.initSCD.bind(this));
 
 		//* Pick frames
-		this.$video.addEventListener("scenechange", (event) => {
-			// this.visibleMessage();
-		});
+		this.$video.addEventListener(
+			"scenechange",
+			this.sceneChangeListener.bind(this)
+		);
 
 		//* Set frames video
 		this.$video.addEventListener("medianFound", (event) => {
@@ -134,6 +137,17 @@ class Detector {
 
 			this.drawChart();
 		});
+
+		//* Listener send message from window
+		chrome.runtime.onMessage.addListener(this.sendWindowMessage.bind(this));
+	}
+
+	sendWindowMessage(request, sender, sendResponse) {
+		if (request.visible) {
+			this.$message.classList.add("active");
+		} else {
+			this.$message.classList.remove("active");
+		}
 	}
 
 	drawChart() {
@@ -211,11 +225,11 @@ class Detector {
 	}
 }
 
-function $(config) {
+function detector(config) {
 	return new Detector(config);
 }
 
-$().init();
+// detector().init();
 
 // //* Hidden message after time value
 // hiddenMessage(time = 0) {
@@ -230,3 +244,147 @@ $().init();
 // 	this.$message.classList.add("active");
 // 	this.hiddenMessage(1500);
 // }
+
+class Message {
+	type = "danger";
+	secondInterval = 4;
+	sceneCount = 5;
+
+	/**
+	 * setInterval hidden mwssage
+	 */
+	_timeOutMessage = null;
+
+	/**
+	 * time change interval (1 sec)
+	 */
+	_timeInterval = null;
+
+	/**
+	 * Count time interval (max - "secondInterval")
+	 */
+	_timeIntervalValue = 0;
+
+	/**
+	 * Count change frames (max - "sceneCount")
+	 */
+	_countChangeScene = 0;
+
+	/**
+	 * Start check count change scene
+	 */
+	_checkTimeState = false;
+
+	constructor(options = {}) {
+		// console.log(_isUndefined(options.type));
+		this.type = _isUndefined(options.type) ? this.type : options.type;
+		this.secondInterval = _isUndefined(options.secondInterval)
+			? this.secondInterval
+			: options.secondInterval;
+		this.sceneCount = _isUndefined(options.sceneCount)
+			? this.sceneCount
+			: options.sceneCount;
+		this.detector = options.detector;
+
+		this.init();
+	}
+
+	init() {
+		if (!this.detector) return;
+
+		document.addEventListener(
+			"DOMContentLoaded",
+			this.contentLoaded.bind(this)
+		);
+	}
+
+	contentLoaded() {
+		this.message = this.createMessage();
+
+		this.createMessage();
+
+		const detector = this.detector({
+			sceneChangeListener: this.sceneChange.bind(this),
+		});
+
+		this._timeInterval = setInterval(
+			this.checkSecondInterval.bind(this),
+			1000
+		);
+	}
+
+	sceneChange() {
+		this._checkTimeState = true;
+
+		if (this._countChangeScene === this.sceneCount) {
+			this.showMessage(this.message);
+			this._countChangeScene = 0;
+
+			return;
+		}
+
+		this._countChangeScene++;
+	}
+
+	checkSecondInterval() {
+		if (!this._checkTimeState) return;
+
+		if (this._timeIntervalValue === this.secondInterval) {
+			if (this._countChangeScene < this.sceneCount) {
+				this._countChangeScene = 0;
+			}
+
+			this._timeIntervalValue = 0;
+			this._checkTimeState = false;
+			return;
+		}
+
+		this._timeIntervalValue++;
+	}
+
+	createMessage() {
+		const message = document.createElement("div");
+
+		message.classList.add("detector-message", this.type);
+		message.insertAdjacentHTML(
+			"beforeend",
+			/*html*/ `
+			<div class="detector-message__inner">
+				<div class="detector-message__icon">
+					<img src="${chrome.runtime.getURL(
+						"/img/error-icon.webp"
+					)}" alt="message danger icon">
+				</div>
+				<div class="detector-message__info">
+					<h5 class="detector-message__title">Danger</h5>
+					<p class="detector-message__text">Danger text</p>
+				</div>
+			</div>
+			`
+		);
+
+		document.body.appendChild(message);
+
+		return message;
+	}
+
+	showMessage(message) {
+		clearTimeout(this._timeOutMessage);
+		message.classList.add("active");
+		this.hiddenMessage(message, 2000);
+	}
+
+	hiddenMessage(message, time = 0) {
+		this._timeOutMessage = setTimeout(() => {
+			message.classList.remove("active");
+		}, time);
+	}
+}
+
+function message(options) {
+	return new Message(options);
+}
+
+message({
+	detector: detector,
+});

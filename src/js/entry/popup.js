@@ -3,7 +3,17 @@ import Util from "chromane/js/Util.js";
 async function popup() {
 	let util = new Util();
 
-	util.create_window_api({});
+	util.create_window_api({
+		visibleGraph(data) {
+			chrome.tabs.query({ url: "https://www.youtube.com/*" }, (tabs) => {
+				if (!tabs.length) return;
+
+				tabs.forEach((tab) => {
+					chrome.tabs.sendMessage(tab.id, data);
+				});
+			});
+		},
+	});
 
 	// inject iframe
 	let config = await fetch("/config.json");
