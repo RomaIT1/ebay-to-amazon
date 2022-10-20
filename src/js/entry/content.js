@@ -22,6 +22,34 @@ function renderModel(ctx, data, options = {}) {
 	ctx.closePath();
 }
 
+function _listEmpty(list) {
+	return list.length === 0;
+}
+
+function _objectEmpty(object) {
+	return Object.keys(object).length === 0;
+}
+
+class Extension {
+	constructor(options) {
+		this.message = options.message;
+		this.init();
+	}
+
+	init() {
+		chrome.storage.local.onChanged.addListener(this.changeStorage.bind(this));
+	}
+
+	changeStorage(changes) {
+		this.updateMessageConfig(this.message, changes);
+	}
+
+	updateMessageConfig(message, changes) {
+		message.secondInterval = changes.secondInterval.newValue;
+		message.sceneCount = changes.sceneCount.newValue;
+	}
+}
+
 class Detector {
 	$video = null;
 	graphCanvasProp = {
@@ -225,33 +253,14 @@ class Detector {
 	}
 }
 
-function detector(config) {
-	return new Detector(config);
-}
-
-// detector().init();
-
-// //* Hidden message after time value
-// hiddenMessage(time = 0) {
-// 	this.timeOutMessage = setTimeout(() => {
-// 		this.$message.classList.remove("active");
-// 	}, time);
-// }
-
-// //* Open message (active add class)
-// visibleMessage() {
-// 	clearTimeout(this.timeOutMessage);
-// 	this.$message.classList.add("active");
-// 	this.hiddenMessage(1500);
-// }
-
 class Message {
+	/**
+	 * Optional
+	 */
 	type = "danger";
-	secondInterval = 4;
-	sceneCount = 5;
 
 	/**
-	 * setInterval hidden mwssage
+	 * setInterval hidden message
 	 */
 	_timeOutMessage = null;
 
@@ -276,14 +285,9 @@ class Message {
 	_checkTimeState = false;
 
 	constructor(options = {}) {
-		// console.log(_isUndefined(options.type));
 		this.type = _isUndefined(options.type) ? this.type : options.type;
-		this.secondInterval = _isUndefined(options.secondInterval)
-			? this.secondInterval
-			: options.secondInterval;
-		this.sceneCount = _isUndefined(options.sceneCount)
-			? this.sceneCount
-			: options.sceneCount;
+		this.secondInterval = options.secondInterval;
+		this.sceneCount = options.sceneCount;
 		this.detector = options.detector;
 
 		this.init();
@@ -311,6 +315,22 @@ class Message {
 			this.checkSecondInterval.bind(this),
 			1000
 		);
+	}
+
+	get secondIntervalValue() {
+		return this.secondInterval;
+	}
+
+	get sceneCountValue() {
+		return this.sceneCount;
+	}
+
+	set secondIntervalValue(value) {
+		this.secondInterval = value;
+	}
+
+	set sceneCountValue(value) {
+		this.sceneCount = value;
 	}
 
 	sceneChange() {
@@ -381,10 +401,54 @@ class Message {
 	}
 }
 
+/**
+ * Create function wrapper detector class
+ */
+function detector(config) {
+	return new Detector(config);
+}
+
+/**
+ * Create function wrapper message class
+ */
 function message(options) {
 	return new Message(options);
 }
 
-message({
-	detector: detector,
-});
+/**
+ * Create function wrapper extension class
+ */
+function extension(options) {
+	return new Extension(options);
+}
+
+async function main() {
+	const SECOND_INTERVAL_DEFAULT = 4;
+	const SCENE_COUNT_DEFAULT = 5;
+
+	const secondInterval = await chrome.storage.local.get("secondInterval");
+	const sceneCount = await chrome.storage.local.get("sceneCount");
+
+	/**
+	 * Init message
+	 */
+
+	const mess = message({
+		detector: detector,
+		secondInterval: _objectEmpty(secondInterval)
+			? SECOND_INTERVAL_DEFAULT
+			: secondInterval.secondInterval,
+		sceneCount: _objectEmpty(sceneCount)
+			? SCENE_COUNT_DEFAULT
+			: sceneCount.sceneCount,
+	});
+
+	/**
+	 * Init extension
+	 */
+	extension({
+		message: mess,
+	});
+}
+
+main();

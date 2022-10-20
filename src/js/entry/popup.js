@@ -1,17 +1,25 @@
 import Util from "chromane/js/Util.js";
 
+async function getAllTabs() {
+	return await chrome.tabs.query({ url: "https://www.youtube.com/*" });
+}
+
 async function popup() {
 	let util = new Util();
 
+	console.log(chrome.storage.local.get().then((data) => console.log(data)));
 	util.create_window_api({
-		visibleGraph(data) {
-			chrome.tabs.query({ url: "https://www.youtube.com/*" }, (tabs) => {
-				if (!tabs.length) return;
-
-				tabs.forEach((tab) => {
-					chrome.tabs.sendMessage(tab.id, data);
-				});
+		async defineConfig(data) {
+			chrome.storage.local.set({
+				secondInterval: data.secondInterval,
+				sceneCount: data.sceneCount,
 			});
+
+			// const tabs = await getAllTabs();
+
+			// tabs.forEach((tab) => {
+			// 	chrome.tabs.sendMessage(tab.id, data);
+			// });
 		},
 	});
 

@@ -38,6 +38,13 @@ export default {
 			this.isOpenSidebar = false;
 			this.currentPage = item;
 		},
+		defineConfig(data) {
+			window.parent_wrap.exec("defineConfig", data);
+			this.redirect("main");
+		},
+		redirect(page) {
+			this.currentPage = page;
+		},
 	},
 	components: {
 		Header,
@@ -53,9 +60,8 @@ export default {
 		<Header @clickMenu="openSidebar"></Header>
 		<main class="main">
 			<component
-				:is="
-					currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'
-				"></component>
+				:is="currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'"
+				@saveConfig="defineConfig"></component>
 			<Sidebar
 				:isOpen="isOpenSidebar"
 				@clickToNowhere="closeSidebar"
