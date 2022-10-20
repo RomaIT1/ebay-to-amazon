@@ -4,13 +4,6 @@
 			<ul class="sidebar__list list">
 				<li v-for="item of listItems" :key="item" class="list__item">
 					<a href="#" @click="itemClick($event, item)">{{ item }}</a>
-					<!-- <label>
-						<span>Visible graph:</span>
-						<input
-							@change="visibleChange"
-							v-model="isVisible"
-							type="checkbox" />
-					</label> -->
 				</li>
 			</ul>
 		</div>

@@ -112,3 +112,22 @@ body {
 	line-height: 140%;
 	margin-bottom: 10px;
 }
+
+.list__item {
+	margin-bottom: 10px;
+	font-weight: 500;
+	font-size: 18px;
+	padding-left: 15px;
+	position: relative;
+}
+
+.list__item::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	transform: translate(0, -50%);
+	left: 0;
+	width: 5px;
+	height: 5px;
+	background-color: #9575cd;
+}

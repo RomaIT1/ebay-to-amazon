@@ -21,9 +21,15 @@ export default class Graph {
 
 	init() {
 		this.window = this.createWindow();
+		this.visibleIcon = document.querySelector("#visible-icon");
 		this.canvasInit();
 
 		this.detector.medianFoundListener = this.medianChange.bind(this);
+		this.visibleIcon.addEventListener("click", this.visibleGraph.bind(this));
+	}
+
+	visibleGraph() {
+		this.window.classList.toggle("active");
 	}
 
 	medianChange(currentFrameValue, volume_diff) {
@@ -46,13 +52,12 @@ export default class Graph {
 	createWindow() {
 		const $message = document.createElement("div");
 
-		$message.classList.add("ext-message");
+		$message.classList.add("detector-graph");
 		$message.insertAdjacentHTML(
 			"beforeend",
 			/*html*/ `
-			<div class="detector-graph">
-				<canvas class="detector-graph__canvas" id="graph-canvas"></canvas>
-			</div>
+			<button class="detector-graph__visible-icon" id="visible-icon"></button>
+			<canvas class="detector-graph__canvas" id="graph-canvas"></canvas>
         `
 		);
 
