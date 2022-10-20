@@ -91,4 +91,5 @@ export default {
 @import url("./styles/components/header.css");
 @import url("./styles/components/sidebar.css");
 @import url("./styles/components/config-page.css");
+@import url("./styles/components/main-page.css");
 </style>

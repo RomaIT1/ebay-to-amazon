@@ -2,26 +2,6 @@ function _isUndefined(value) {
 	return typeof value === "undefined";
 }
 
-function renderModel(ctx, data, options = {}) {
-	ctx.strokeStyle = options.color;
-	ctx.lineWidth = 4;
-
-	ctx.beginPath();
-
-	var x = 0;
-
-	for (let i = 0; i < data.length; i++) {
-		let y = data[i];
-
-		ctx.lineTo(x, y);
-
-		x += 5;
-	}
-
-	ctx.stroke();
-	ctx.closePath();
-}
-
 function _listEmpty(list) {
 	return list.length === 0;
 }
@@ -55,43 +35,18 @@ class Extension {
 
 class Detector {
 	$video = null;
-	graphCanvasProp = {
-		$el: null,
-		context: null,
-		width: null,
-		height: null,
-	};
-
-	volumeGraphProp = {
-		point: [],
-	};
-	framesGraphProp = {
-		point: [],
-	};
-
-	sceneChangeListener = () => {};
 
 	constructor(options = {}) {
-		this.sceneChangeListener = _isUndefined(options.sceneChangeListener)
-			? this.sceneChangeListener
-			: options.sceneChangeListener;
-
 		this.init();
 	}
 
+	sceneChangeListener() {}
+	medianFoundListener() {}
+
 	//* Init Detector plugin
 	init() {
-		//* Create window message
-		this.$message = this.createGraph();
-
 		//* Get YouTube video html element
 		this.$video = document.querySelector("video");
-
-		// //* If video is not defined (finish programm)
-		// if (!this.$video) return;
-
-		//* Get detector canvas
-		this.canvasInit();
 
 		//* Prev volume value (default - 0)
 		let prevVolumeValue = 0;
@@ -118,11 +73,9 @@ class Detector {
 		this.$video.addEventListener("loadedmetadata", this.initSCD.bind(this));
 
 		//* Pick frames
-		this.$video.addEventListener(
-			"scenechange",
-			this.sceneChangeListener.bind(this)
-		);
-
+		this.$video.addEventListener("scenechange", (event) => {
+			this.sceneChangeListener();
+		});
 		//* Set frames video
 		this.$video.addEventListener("medianFound", (event) => {
 			analyser.getByteFrequencyData(dataArray);
@@ -145,74 +98,8 @@ class Detector {
 
 			prevVolumeValue = currentVolumeValue;
 
-			//* Pick volume
-			if (
-				Math.abs(currentVolumeValue - prevVolumeValue) >
-				Math.round(30 * this.$video.volume)
-			) {
-				// this.visibleMessage();
-			}
-
-			// Add point chart
-			this.framesGraphProp.point.push(
-				this.graphCanvasProp.height - 3 - currentFrameValue
-			);
-			this.volumeGraphProp.point.push(
-				this.graphCanvasProp.height -
-					3 -
-					volume_diff * this.graphCanvasProp.height
-			);
-
-			this.framesGraphProp.point = this.framesGraphProp.point.slice(-100);
-			this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-100);
-
-			this.drawChart();
+			this.medianFoundListener(currentFrameValue, volume_diff);
 		});
-
-		//* Listener send message from window
-		chrome.runtime.onMessage.addListener(this.sendWindowMessage.bind(this));
-	}
-
-	sendWindowMessage(request, sender, sendResponse) {
-		if (request.visible) {
-			this.$message.classList.add("active");
-		} else {
-			this.$message.classList.remove("active");
-		}
-	}
-
-	drawChart() {
-		this.graphCanvasProp.context.clearRect(
-			0,
-			0,
-			this.graphCanvasProp.width,
-			this.graphCanvasProp.height
-		);
-
-		renderModel(this.graphCanvasProp.context, this.framesGraphProp.point, {
-			color: "#c62828",
-		});
-		renderModel(this.graphCanvasProp.context, this.volumeGraphProp.point, {
-			color: "#1a237e",
-		});
-	}
-
-	//* Canvas init
-	canvasInit() {
-		this.graphCanvasProp.$el = document.querySelector("#graph-canvas");
-		this.graphCanvasProp.context = this.graphCanvasProp.$el.getContext("2d");
-		this.graphCanvasProp.width = 600;
-		this.graphCanvasProp.height = 200;
-
-		// Set size node canvas
-		this.graphCanvasProp.$el.style.width =
-			this.graphCanvasProp.width / 2 + "px";
-		this.graphCanvasProp.$el.style.height =
-			this.graphCanvasProp.height / 2 + "px";
-
-		// Set size chart canvas
-		this.graphCanvasProp.$el.width = this.graphCanvasProp.width;
-		this.graphCanvasProp.$el.height = this.graphCanvasProp.height;
 	}
 
 	//* Init SCD lib
@@ -223,36 +110,6 @@ class Detector {
 
 		d.init();
 		d.start();
-	}
-
-	//* Create message node
-	createGraph() {
-		const $message = document.createElement("div");
-
-		$message.classList.add("ext-message");
-		$message.insertAdjacentHTML(
-			"beforeend",
-			/*html*/ `
-            <div class="ext-message__graph graph">
-                <div class="graph__label">Change graph</div>
-                <canvas class="graph__canvas" id="graph-canvas"></canvas>
-            </div>
-				<div class="ext-message__info info">
-						<ul class="info__list list">
-							<li class="list__item">
-								red: <span class="frames-color">frames</span>
-							</li>
-							<li class="list__item">
-								blue: <span class="volume-color">volume</span>
-							</li>
-						</ul>
-				</div>
-        `
-		);
-
-		document.body.appendChild($message);
-
-		return $message;
 	}
 }
 
@@ -300,19 +157,10 @@ class Message {
 	init() {
 		if (!this.detector) return;
 
-		document.addEventListener(
-			"DOMContentLoaded",
-			this.contentLoaded.bind(this)
-		);
-	}
-
-	contentLoaded() {
 		this.message = this.createMessage();
 		this.audio = this.message.querySelector("audio");
 
-		const detector = this.detector({
-			sceneChangeListener: this.sceneChange.bind(this),
-		});
+		this.detector.sceneChangeListener = this.sceneChange.bind(this);
 
 		this._timeInterval = setInterval(
 			this.checkSecondInterval.bind(this),
@@ -398,11 +246,138 @@ class Message {
 	}
 }
 
+class Graph {
+	graphCanvasProp = {
+		$el: null,
+		context: null,
+		width: null,
+		height: null,
+	};
+
+	volumeGraphProp = {
+		point: [],
+	};
+	framesGraphProp = {
+		point: [],
+	};
+	constructor(options) {
+		this.detector = options.detector;
+		this.init();
+	}
+
+	init() {
+		this.window = this.createWindow();
+		this.canvasInit();
+
+		this.detector.medianFoundListener = this.medianChange.bind(this);
+	}
+
+	medianChange(currentFrameValue, volume_diff) {
+		// Add point chart
+		this.framesGraphProp.point.push(
+			this.graphCanvasProp.height - 3 - currentFrameValue
+		);
+		this.volumeGraphProp.point.push(
+			this.graphCanvasProp.height -
+				3 -
+				volume_diff * this.graphCanvasProp.height
+		);
+
+		this.framesGraphProp.point = this.framesGraphProp.point.slice(-100);
+		this.volumeGraphProp.point = this.volumeGraphProp.point.slice(-100);
+
+		this.drawChart();
+	}
+
+	createWindow() {
+		const $message = document.createElement("div");
+
+		$message.classList.add("ext-message");
+		$message.insertAdjacentHTML(
+			"beforeend",
+			/*html*/ `
+			<div class="detector-graph">
+				<canvas class="detector-graph__canvas" id="graph-canvas"></canvas>
+			</div>
+        `
+		);
+
+		document.body.appendChild($message);
+
+		return $message;
+	}
+
+	canvasInit() {
+		this.graphCanvasProp.$el = document.querySelector("#graph-canvas");
+		this.graphCanvasProp.context = this.graphCanvasProp.$el.getContext("2d");
+		this.graphCanvasProp.width = 600;
+		this.graphCanvasProp.height = 200;
+
+		// Set size node canvas
+		this.graphCanvasProp.$el.style.width =
+			this.graphCanvasProp.width / 2 + "px";
+		this.graphCanvasProp.$el.style.height =
+			this.graphCanvasProp.height / 2 + "px";
+
+		// Set size chart canvas
+		this.graphCanvasProp.$el.width = this.graphCanvasProp.width;
+		this.graphCanvasProp.$el.height = this.graphCanvasProp.height;
+	}
+
+	drawChart() {
+		this.graphCanvasProp.context.clearRect(
+			0,
+			0,
+			this.graphCanvasProp.width,
+			this.graphCanvasProp.height
+		);
+
+		this.renderLine(
+			this.graphCanvasProp.context,
+			this.framesGraphProp.point,
+			{
+				color: "#c62828",
+			}
+		);
+		this.renderLine(
+			this.graphCanvasProp.context,
+			this.volumeGraphProp.point,
+			{
+				color: "#1a237e",
+			}
+		);
+	}
+
+	renderLine(ctx, data, options = {}) {
+		ctx.strokeStyle = options.color;
+		ctx.lineWidth = 4;
+
+		ctx.beginPath();
+
+		var x = 0;
+
+		for (let i = 0; i < data.length; i++) {
+			let y = data[i];
+
+			ctx.lineTo(x, y);
+
+			x += 5;
+		}
+
+		ctx.stroke();
+		ctx.closePath();
+	}
+}
+
+function graph(options) {
+	return new Graph(options);
+}
+
 /**
  * Create function wrapper detector class
  */
-function detector(config) {
-	return new Detector(config);
+function detector(options) {
+	return new Detector(options);
 }
 
 /**
@@ -419,6 +394,8 @@ function extension(options) {
 	return new Extension(options);
 }
 
+document.addEventListener("DOMContentLoaded", main);
+
 async function main() {
 	const SECOND_INTERVAL_DEFAULT = 4;
 	const SCENE_COUNT_DEFAULT = 5;
@@ -428,12 +405,13 @@ async function main() {
 	const sceneCount = await chrome.storage.local.get("sceneCount");
 	const soundMessage = await chrome.storage.local.get("soundMessage");
 
+	const videoDetector = detector();
+
 	/**
 	 * Init message
 	 */
-
 	const mess = message({
-		detector: detector,
+		detector: videoDetector,
 		secondInterval: _objectEmpty(secondInterval)
 			? SECOND_INTERVAL_DEFAULT
 			: secondInterval.secondInterval,
@@ -451,6 +429,8 @@ async function main() {
 	extension({
 		message: mess,
 	});
-}
 
-main();
+	graph({
+		detector: videoDetector,
+	});
+}
