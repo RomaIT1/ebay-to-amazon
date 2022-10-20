@@ -11,17 +11,23 @@ export default {
 		return {
 			isOpenSidebar: false,
 			currentPage: "main",
+			config: {},
 		};
 	},
-	mounted() {
+	async mounted() {
 		window.util = new Util();
 
 		window.parent_wrap = window.util.create_window_wrap(
 			window,
 			window.parent
 		);
+
+		this.config = await this.getConfig();
 	},
 	methods: {
+		async getConfig() {
+			return await window.parent_wrap.exec("getConfig");
+		},
 		closeSidebar() {
 			this.isOpenSidebar = false;
 		},
@@ -39,6 +45,10 @@ export default {
 			this.currentPage = item;
 		},
 		defineConfig(data) {
+			this.config.sceneCount = data.sceneCount;
+			this.config.secondInterval = data.secondInterval;
+			this.config.soundMessage = data.soundMessage;
+
 			window.parent_wrap.exec("defineConfig", data);
 			this.redirect("main");
 		},
@@ -61,7 +71,8 @@ export default {
 		<main class="main">
 			<component
 				:is="currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'"
-				@saveConfig="defineConfig"></component>
+				@saveConfig="defineConfig"
+				:config="config"></component>
 			<Sidebar
 				:isOpen="isOpenSidebar"
 				@clickToNowhere="closeSidebar"

@@ -45,8 +45,11 @@ class Extension {
 	}
 
 	updateMessageConfig(message, changes) {
-		message.secondInterval = changes.secondInterval.newValue;
-		message.sceneCount = changes.sceneCount.newValue;
+		const keys = Object.keys(changes);
+
+		keys.forEach((key) => {
+			message[key] = changes[key].newValue;
+		});
 	}
 }
 
@@ -289,6 +292,7 @@ class Message {
 		this.secondInterval = options.secondInterval;
 		this.sceneCount = options.sceneCount;
 		this.detector = options.detector;
+		this.soundMessage = options.soundMessage;
 
 		this.init();
 	}
@@ -304,8 +308,7 @@ class Message {
 
 	contentLoaded() {
 		this.message = this.createMessage();
-
-		this.createMessage();
+		this.audio = this.message.querySelector("audio");
 
 		const detector = this.detector({
 			sceneChangeListener: this.sceneChange.bind(this),
@@ -317,26 +320,14 @@ class Message {
 		);
 	}
 
-	get secondIntervalValue() {
-		return this.secondInterval;
-	}
-
-	get sceneCountValue() {
-		return this.sceneCount;
-	}
-
-	set secondIntervalValue(value) {
-		this.secondInterval = value;
-	}
-
-	set sceneCountValue(value) {
-		this.sceneCount = value;
-	}
-
 	sceneChange() {
 		this._checkTimeState = true;
 
 		if (this._countChangeScene === this.sceneCount) {
+			if (this.soundMessage) {
+				this.soundPlay(this.audio);
+			}
+
 			this.showMessage(this.message);
 			this._countChangeScene = 0;
 
@@ -379,6 +370,7 @@ class Message {
 					<h5 class="detector-message__title">Danger</h5>
 					<p class="detector-message__text">Danger text</p>
 				</div>
+				<audio src="${chrome.runtime.getURL("/media/notify.mp3")}"></audio>
 			</div>
 			`
 		);
@@ -386,6 +378,11 @@ class Message {
 		document.body.appendChild(message);
 
 		return message;
+	}
+
+	soundPlay(audio) {
+		audio.pause();
+		audio.play();
 	}
 
 	showMessage(message) {
@@ -425,9 +422,11 @@ function extension(options) {
 async function main() {
 	const SECOND_INTERVAL_DEFAULT = 4;
 	const SCENE_COUNT_DEFAULT = 5;
+	const SOUND_MESSAGE_DEFAULT = false;
 
 	const secondInterval = await chrome.storage.local.get("secondInterval");
 	const sceneCount = await chrome.storage.local.get("sceneCount");
+	const soundMessage = await chrome.storage.local.get("soundMessage");
 
 	/**
 	 * Init message
@@ -441,6 +440,9 @@ async function main() {
 		sceneCount: _objectEmpty(sceneCount)
 			? SCENE_COUNT_DEFAULT
 			: sceneCount.sceneCount,
+		soundMessage: _objectEmpty(soundMessage)
+			? SOUND_MESSAGE_DEFAULT
+			: soundMessage.soundMessage,
 	});
 
 	/**

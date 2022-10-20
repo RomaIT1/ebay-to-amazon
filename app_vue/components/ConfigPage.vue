@@ -1,6 +1,17 @@
 <script>
 export default {
 	emits: ["saveConfig"],
+	props: {
+		config: {
+			require: true,
+			type: Object,
+		},
+	},
+	mounted() {
+		this.sceneCount = this.config.sceneCount;
+		this.secondInterval = this.config.secondInterval;
+		this.soundMessage = this.config.soundMessage;
+	},
 	data() {
 		return {
 			soundMessage: false,
@@ -15,6 +26,7 @@ export default {
 			this.$emit("saveConfig", {
 				sceneCount: this.sceneCount,
 				secondInterval: this.secondInterval,
+				soundMessage: this.soundMessage,
 			});
 		},
 	},
