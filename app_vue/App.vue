@@ -72,14 +72,10 @@ export default {
 	<div id="app">
 		<Header @clickMenu="openSidebar" @clickClose="windowClose"></Header>
 		<main class="main">
-			<KeepAlive>
-				<component
-					:is="
-						currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'
-					"
-					@saveConfig="defineConfig"
-					:config="config"></component>
-			</KeepAlive>
+			<component
+				:is="currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'"
+				@saveConfig="defineConfig"
+				:config="config"></component>
 			<Sidebar
 				:isOpen="isOpenSidebar"
 				@clickToNowhere="closeSidebar"
