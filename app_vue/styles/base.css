@@ -117,7 +117,7 @@ body {
 	margin-bottom: 10px;
 	font-weight: 500;
 	font-size: 18px;
-	padding-left: 15px;
+	padding-left: 10px;
 	position: relative;
 }
 
@@ -129,5 +129,5 @@ body {
 	left: 0;
 	width: 5px;
 	height: 5px;
-	background-color: #9575cd;
+	background-color: #37474f;
 }

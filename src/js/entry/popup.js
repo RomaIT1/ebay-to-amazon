@@ -16,6 +16,9 @@ async function popup() {
 				soundMessage: data.soundMessage,
 			});
 		},
+		windowClose() {
+			window.close();
+		},
 		getConfig() {
 			return new Promise(async (resolve, reject) => {
 				const secondInterval = await chrome.storage.local.get(

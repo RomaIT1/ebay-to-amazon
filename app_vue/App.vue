@@ -55,6 +55,9 @@ export default {
 		redirect(page) {
 			this.currentPage = page;
 		},
+		windowClose() {
+			window.parent_wrap.exec("windowClose");
+		},
 	},
 	components: {
 		Header,
@@ -67,12 +70,16 @@ export default {
 
 <template>
 	<div id="app">
-		<Header @clickMenu="openSidebar"></Header>
+		<Header @clickMenu="openSidebar" @clickClose="windowClose"></Header>
 		<main class="main">
-			<component
-				:is="currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'"
-				@saveConfig="defineConfig"
-				:config="config"></component>
+			<KeepAlive>
+				<component
+					:is="
+						currentPage[0].toUpperCase() + currentPage.slice(1) + 'Page'
+					"
+					@saveConfig="defineConfig"
+					:config="config"></component>
+			</KeepAlive>
 			<Sidebar
 				:isOpen="isOpenSidebar"
 				@clickToNowhere="closeSidebar"

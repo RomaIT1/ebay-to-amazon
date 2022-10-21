@@ -8,7 +8,9 @@
 				<div class="header__logo logo">
 					<span>YouTube Detector</span>
 				</div>
-				<div class="header__popup-close popup-close">
+				<div
+					class="header__popup-close popup-close"
+					@click="$emit('clickClose')">
 					<button>&times;</button>
 				</div>
 			</div>
@@ -18,7 +20,7 @@
 
 <script>
 export default {
-	emits: ["clickMenu"],
+	emits: ["clickMenu", "clickClose"],
 	methods: {
 		clickMenu(event) {
 			event.stopPropagation();
