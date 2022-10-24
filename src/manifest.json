@@ -6,9 +6,9 @@
 	"content_scripts": [
 		{
 			"all_frames": false,
-			"js": ["/libs/scd.js", "/js/content.js"],
+			"js": ["/js/content.js"],
 			"css": ["/css/content.css"],
-			"matches": ["https://www.youtube.com/*"],
+			"matches": ["https://www.ebay.com/*"],
 			"run_at": "document_start"
 		}
 	],
@@ -25,7 +25,7 @@
 		"512": "/img/logo.png"
 	},
 	"manifest_version": 3,
-	"name": "youtube-change-detector",
+	"name": "ebay-filters",
 	"permissions": ["alarms", "storage", "unlimitedStorage", "tabs"],
 	"host_permissions": [],
 	"version": "0.0.4",

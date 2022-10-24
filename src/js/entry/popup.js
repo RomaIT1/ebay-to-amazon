@@ -7,45 +7,7 @@ async function getAllTabs() {
 async function popup() {
 	let util = new Util();
 
-	util.create_window_api({
-		async defineConfig(data) {
-			console.log(data);
-			chrome.storage.local.set({
-				secondInterval: data.secondInterval,
-				sceneCount: data.sceneCount,
-				soundMessage: data.soundMessage,
-			});
-		},
-		windowClose() {
-			window.close();
-		},
-		getConfig() {
-			return new Promise(async (resolve, reject) => {
-				const secondInterval = await chrome.storage.local.get(
-					"secondInterval"
-				);
-				const sceneCount = await chrome.storage.local.get("sceneCount");
-
-				const soundMessage = await chrome.storage.local.get("soundMessage");
-
-				const data = {
-					secondInterval: Object.keys(secondInterval).length
-						? secondInterval.secondInterval
-						: 4,
-					sceneCount: Object.keys(sceneCount).length
-						? sceneCount.sceneCount
-						: 5,
-					soundMessage: Object.keys(soundMessage).length
-						? soundMessage.soundMessage
-						: false,
-				};
-
-				console.log();
-
-				resolve(data);
-			});
-		},
-	});
+	util.create_window_api({});
 
 	// inject iframe
 	let config = await fetch("/config.json");
