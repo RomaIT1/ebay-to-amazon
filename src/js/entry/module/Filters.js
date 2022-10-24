@@ -1,194 +1,199 @@
 export default class Filters {
-	mainContent = document.querySelector("#mainContent");
-	cardProductItem = Array.from(document.querySelectorAll(".s-item")).slice(1);
-	currentTab = null;
-	tabsServices = [
-		{ name: "bad-sellers", label: "Bad sellers" },
-		{ name: "good-sellers", label: "Good sellers" },
-	];
-	tabsSold = [
-		{ name: "multiple-sold", label: "Multiply sold" },
-		{ name: "not-sold", label: "Not sold" },
-	];
-	tabsList = [...this.tabsServices, ...this.tabsSold];
-	displaySellers = [];
-	constructor(options) {
-		this.init();
-	}
+  mainContent = document.querySelector("#mainContent");
+  cardProductItem = Array.from(document.querySelectorAll(".s-item")).slice(1);
+  currentTab = null;
+  tabsServices = [
+    { name: "bad-sellers", label: "All sellers" },
+    { name: "good-sellers", label: "Good sellers" },
+  ];
+  tabsSold = [
+    // { name: "multiple-sold", label: "All quantities sold" },
+    { name: "not-sold", label: "No items sold" },
+  ];
+  tabsList = [...this.tabsServices, ...this.tabsSold];
+  displaySellers = [];
+  constructor(options) {
+    if (location.href.startsWith("https://www.ebay.com/sch")) {
+      this.init();
+    }
+  }
 
-	async init() {
-		await this.loadProductInfo();
+  async init() {
+    this.loadProductInfo();
 
-		this.filterTabsBar = this.createFilterTabs();
-		this.filterTabs = this.filterTabsBar.querySelectorAll(".ext-tabs__item");
-		this.filterTabs.forEach(this.tabAction.bind(this));
+    this.filterTabsBar = this.createFilterTabs();
+    this.filterTabs = this.filterTabsBar.querySelectorAll(".ext-tabs__item");
+    this.filterTabs.forEach(this.tabAction.bind(this));
 
-		console.log(this.displaySellers);
-	}
+    document.querySelector(".ext-tabs__item_0").classList.add("active");
 
-	loadProductInfo() {
-		function promiseWrapper(resolve) {
-			this.cardProductItem.forEach(async (item, index) => {
-				await this.getSellerInfo(item, index);
+    console.log(this.displaySellers);
+  }
 
-				if (this.displaySellers.length === this.cardProductItem.length) {
-					resolve();
-				}
-			});
-		}
+  loadProductInfo() {
+    function promiseWrapper(resolve) {
+      this.cardProductItem.forEach(async (item, index) => {
+        await this.getSellerInfo(item, index);
 
-		return new Promise(promiseWrapper.bind(this));
-	}
+        if (this.displaySellers.length === this.cardProductItem.length) {
+          resolve();
+        }
+      });
+    }
 
-	async getSellerInfo(item, index) {
-		const linkNode = item.querySelector(".s-item__link");
+    return new Promise(promiseWrapper.bind(this));
+  }
 
-		const productId = linkNode
-			.getAttribute("href")
-			.split("/")
-			[linkNode.getAttribute("href").split("/").length - 1].split("?")[0];
+  async getSellerInfo(item, index) {
+    const linkNode = item.querySelector(".s-item__link");
 
-		const itemInfo = await this.getSellerFetch(productId);
+    const productId = linkNode
+      .getAttribute("href")
+      .split("/")
+      [linkNode.getAttribute("href").split("/").length - 1].split("?")[0];
 
-		item.setAttribute("data-product-id", productId);
+    const itemInfo = await this.getSellerFetch(productId);
 
-		this.displaySellers.push(itemInfo);
-	}
+    item.setAttribute("data-product-id", productId);
 
-	async getSellerFetch(id) {
-		const res = await fetch(`https://www.ebay.com/itm/${id}`);
-		const page = await res.text();
+    this.displaySellers.push(itemInfo);
+  }
 
-		const innerNode = document.createElement("div");
-		innerNode.innerHTML = page;
+  async getSellerFetch(id) {
+    let res = await fetch(`https://www.ebay.com/itm/${id}`);
+    let page = await res.text();
 
-		const seller = innerNode
-			.querySelector("a[href^='https://ocswf.ebay.com/rti/compose?seller=']")
-			.getAttribute("href")
-			.split("=")[1]
-			.split("&")[0];
+    let innerNode = document.createElement("div");
+    innerNode.innerHTML = page;
 
-		const feedback = Math.round(
-			+innerNode
-				.querySelector("a[href='#LISTING_FRAME_MODULE']")
-				.textContent.trim()
-				.split(" ")[0]
-				.replace("%", "")
-		);
+    let seller = innerNode
+      .querySelector("a[href^='https://ocswf.ebay.com/rti/compose?seller=']")
+      .getAttribute("href")
+      .split("=")[1]
+      .split("&")[0];
 
-		const sold = innerNode.querySelector(".vi-txt-underline");
+    let feedback = Math.round(
+      +innerNode
+        .querySelector("a[href='#LISTING_FRAME_MODULE']")
+        .textContent.trim()
+        .split(" ")[0]
+        .replace("%", "")
+    );
 
-		const dataObject = {
-			seller,
-			feedback,
-			id,
-			sold: sold ? +sold.textContent.split(" ")[0] : 0,
-		};
+    let sold = innerNode.querySelector(".vi-txt-underline");
+    (sold = sold ? +sold.textContent.split(" ")[0] : 0),
+      console.log(id, sold, feedback);
 
-		innerNode.remove();
+    let dataObject = {
+      seller,
+      feedback,
+      id,
+      sold,
+    };
 
-		return dataObject;
-	}
+    innerNode.remove();
 
-	tabAction(item, index) {
-		const tabLink = item.querySelector(".ext-tabs__link");
+    return dataObject;
+  }
 
-		tabLink.addEventListener("click", this.tabSelect.bind(this, item, index));
-	}
+  tabAction(item, index) {
+    const tabLink = item.querySelector(".ext-tabs__link");
+    tabLink.addEventListener("click", this.tabSelect.bind(this, item, index));
+  }
 
-	tabSelect(item, index, event) {
-		event.preventDefault();
+  tabSelect(item, index, event) {
+    event.preventDefault();
 
-		if (index === this.currentTab) {
-			item.classList.remove("active");
-			this.currentTab = 0;
-		} else {
-			this.tabUnSelectedAll();
-			item.classList.add("active");
-			this.currentTab = index;
-		}
+    if (index === this.currentTab) {
+      item.classList.remove("active");
+      this.currentTab = 0;
+    } else {
+      this.tabUnSelectedAll();
+      item.classList.add("active");
+      this.currentTab = index;
+    }
 
-		this.unSelectedItemAll();
+    this.unSelectedItemAll();
 
-		if (!this.tabsList[this.currentTab]) return;
+    if (!this.tabsList[this.currentTab]) return;
 
-		if (this.tabsList[this.currentTab].name === "good-sellers") {
-			this.displaySellers.forEach((item, index) => {
-				if (item.feedback >= 95) {
-					document
-						.querySelector(`li[data-product-id="${item.id}"]`)
-						.classList.add("selected");
-				}
-			});
-		} else if (this.tabsList[this.currentTab].name === "bad-sellers") {
-			this.displaySellers.forEach((item, index) => {
-				if (item.feedback <= 95) {
-					document
-						.querySelector(`li[data-product-id="${item.id}"]`)
-						.classList.add("selected");
-				}
-			});
-		} else if (this.tabsList[this.currentTab].name === "multiple-sold") {
-			this.displaySellers.forEach((item, index) => {
-				if (item.sold >= 1) {
-					document
-						.querySelector(`li[data-product-id="${item.id}"]`)
-						.classList.add("selected");
-				}
-			});
-		} else if (this.tabsList[this.currentTab].name === "not-sold") {
-			this.displaySellers.forEach((item, index) => {
-				if (item.sold === 0) {
-					document
-						.querySelector(`li[data-product-id="${item.id}"]`)
-						.classList.add("selected");
-				}
-			});
-		}
-	}
+    if (this.tabsList[this.currentTab].name === "good-sellers") {
+      this.displaySellers.forEach((item, index) => {
+        if (item.feedback < 100) {
+          document
+            .querySelector(`li[data-product-id="${item.id}"]`)
+            .classList.add("selected");
+        }
+      });
+    } else if (this.tabsList[this.currentTab].name === "bad-sellers") {
+      //   this.displaySellers.forEach((item, index) => {
+      //     if (item.feedback >= 95) {
+      //       document
+      //         .querySelector(`li[data-product-id="${item.id}"]`)
+      //         .classList.add("selected");
+      //     }
+      //   });
+    } else if (this.tabsList[this.currentTab].name === "multiple-sold") {
+      //   this.displaySellers.forEach((item, index) => {
+      //     if (item.sold >= 1) {
+      //       document
+      //         .querySelector(`li[data-product-id="${item.id}"]`)
+      //         .classList.add("selected");
+      //     }
+      //   });
+    } else if (this.tabsList[this.currentTab].name === "not-sold") {
+      this.displaySellers.forEach((item, index) => {
+        if (item.sold !== 0) {
+          document
+            .querySelector(`li[data-product-id="${item.id}"]`)
+            .classList.add("selected");
+        }
+      });
+    }
+  }
 
-	unSelectedItemAll() {
-		this.cardProductItem.forEach((item, index) => {
-			item.classList.remove("selected");
-		});
-	}
+  unSelectedItemAll() {
+    this.cardProductItem.forEach((item, index) => {
+      item.classList.remove("selected");
+    });
+  }
 
-	tabUnSelectedAll() {
-		this.filterTabs.forEach((item) => {
-			item.classList.remove("active");
-		});
-	}
+  tabUnSelectedAll() {
+    this.filterTabs.forEach((item) => {
+      item.classList.remove("active");
+    });
+  }
 
-	createFilterTabs() {
-		function _renderList(list) {
-			let html = "";
+  createFilterTabs() {
+    function _renderList(list) {
+      let html = "";
 
-			list.forEach((item, index) => {
-				html += /*html*/ `
-					<li class="ext-tabs__item">
+      list.forEach((item, index) => {
+        html += /*html*/ `
+					<li class="ext-tabs__item ext-tabs__item_${index}">
 						<a class="ext-tabs__link" data-tab-name="${item.name}" data-tab-id="${index}" href="#">${item.label}</a>
 					</li>
 				`;
-			});
+      });
 
-			return html;
-		}
+      return html;
+    }
 
-		const filterTabs = document.createElement("section");
+    const filterTabs = document.createElement("section");
 
-		filterTabs.classList.add("ext-filter");
-		filterTabs.insertAdjacentHTML(
-			"afterbegin",
-			/*html*/ `
+    filterTabs.classList.add("ext-filter");
+    filterTabs.insertAdjacentHTML(
+      "afterbegin",
+      /*html*/ `
 			<div class="ext-filter__inner">
 				<ul class="ext-filter__tabs ext-tabs">
 					${_renderList(this.tabsList)}
 				</ul>
 			</div>
 		`
-		);
-		this.mainContent.prepend(filterTabs);
+    );
+    this.mainContent.prepend(filterTabs);
 
-		return filterTabs;
-	}
+    return filterTabs;
+  }
 }

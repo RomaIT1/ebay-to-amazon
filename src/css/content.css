@@ -1,60 +1,65 @@
 .ext-filter * {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .ext-tabs {
-	list-style: none;
+  list-style: none;
 }
 
 .ext-filter__inner {
-	padding: 15px 0px;
+  padding: 15px 0px;
 }
 
 .ext-tabs {
-	display: flex;
-	align-items: stretch;
+  display: flex;
+  align-items: stretch;
 }
 
 .ext-tabs__item {
-	font-size: 12px;
-	color: #191919;
-	background-color: #ffffff;
-	transition-duration: 300ms;
-	margin-left: 8px;
+  font-size: 12px;
+  color: #191919;
+  background-color: #ffffff;
+  transition-duration: 300ms;
+  margin-right: -1px;
+}
+
+.ext-tabs__item_1 {
 }
 
 .ext-tabs__item:first-child {
-	margin-left: 0;
+  margin-left: 0;
 }
 
 .s-item {
-	background: none;
+  background: none;
 }
 
 .ext-tabs__item.active {
-	background-color: #3665f3;
-	color: #ffffff;
+  background-color: #3665f3;
+  color: #ffffff;
 }
 
 li[data-product-id] {
-	background-color: rgb(214, 64, 57, 0);
-	transition-duration: 300ms;
+  background-color: rgb(214, 64, 57, 0);
+  transition-duration: 300ms;
 }
 
 li[data-product-id].selected {
-	background-color: rgb(214, 64, 57, 0.3);
+  background-color: rgb(214, 64, 57, 0.3);
+  height: 120px;
+  overflow: hidden;
 }
 
 .ext-tabs__link {
-	color: inherit;
-	display: block;
-	padding: 6px 8px;
-	border: 1px solid #e5e5e5;
-	line-height: 150%;
+  color: inherit;
+  display: block;
+  padding: 6px 8px;
+  border: 1px solid #e5e5e5;
+  line-height: 150%;
 }
 
 .ext-tabs__link:link {
-	color: inherit;
+  color: inherit;
 }
