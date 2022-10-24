@@ -22,6 +22,11 @@
 	color: #191919;
 	background-color: #ffffff;
 	transition-duration: 300ms;
+	margin-left: 8px;
+}
+
+.ext-tabs__item:first-child {
+	margin-left: 0;
 }
 
 .s-item {

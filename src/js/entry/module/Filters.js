@@ -2,12 +2,15 @@ export default class Filters {
 	mainContent = document.querySelector("#mainContent");
 	cardProductItem = Array.from(document.querySelectorAll(".s-item")).slice(1);
 	currentTab = null;
-	tabsList = [
+	tabsServices = [
 		{ name: "bad-sellers", label: "Bad sellers" },
 		{ name: "good-sellers", label: "Good sellers" },
+	];
+	tabsSold = [
 		{ name: "multiple-sold", label: "Multiply sold" },
 		{ name: "not-sold", label: "Not sold" },
 	];
+	tabsList = [...this.tabsServices, ...this.tabsSold];
 	displaySellers = [];
 	constructor(options) {
 		this.init();
@@ -98,7 +101,7 @@ export default class Filters {
 
 		if (index === this.currentTab) {
 			item.classList.remove("active");
-			this.currentTab = null;
+			this.currentTab = 0;
 		} else {
 			this.tabUnSelectedAll();
 			item.classList.add("active");
@@ -109,25 +112,23 @@ export default class Filters {
 
 		if (!this.tabsList[this.currentTab]) return;
 
-		// if (this.tabsList[this.currentTab].name === "good-sellers") {
-		// 	this.displaySellers.forEach((item, index) => {
-		// 		if (item.feedback >= 95) {
-		// 			document
-		// 				.querySelector(`li[data-product-id="${item.id}"]`)
-		// 				.classList.add("selected");
-		// 		}
-		// 	});
-		// } else if (this.tabsList[this.currentTab].name === "bad-sellers") {
-		// 	this.displaySellers.forEach((item, index) => {
-		// 		if (item.feedback <= 95) {
-		// 			document
-		// 				.querySelector(`li[data-product-id="${item.id}"]`)
-		// 				.classList.add("selected");
-		// 		}
-		// 	});
-		// }
-
-		if (this.tabsList[this.currentTab].name === "multiple-sold") {
+		if (this.tabsList[this.currentTab].name === "good-sellers") {
+			this.displaySellers.forEach((item, index) => {
+				if (item.feedback >= 95) {
+					document
+						.querySelector(`li[data-product-id="${item.id}"]`)
+						.classList.add("selected");
+				}
+			});
+		} else if (this.tabsList[this.currentTab].name === "bad-sellers") {
+			this.displaySellers.forEach((item, index) => {
+				if (item.feedback <= 95) {
+					document
+						.querySelector(`li[data-product-id="${item.id}"]`)
+						.classList.add("selected");
+				}
+			});
+		} else if (this.tabsList[this.currentTab].name === "multiple-sold") {
 			this.displaySellers.forEach((item, index) => {
 				if (item.sold >= 1) {
 					document
